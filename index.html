@@ -78,73 +78,7 @@
         </nav>
         
         <div id="admin-nav" class="hidden flex gap-2 px-4 py-2 border-b text-sm overflow-x-auto bg-white/50 dark:bg-black/20 sticky top-14 z-30 backdrop-blur-md">
-            <button onclick="navigateTo('dashboard')" id="nav-dashboard" class="px-4 py-2 rounded-lg nav-active">ড্যাশবোর্ড</button>
-            <button onclick="navigateTo('transactions')" id="nav-transactions" class="px-4 py-2 rounded-lg text-gray-500">লেনদেন</button>
-            <button onclick="navigateTo('customers')" id="nav-customers" class="px-4 py-2 rounded-lg text-gray-500">কাস্টমার</button>
-        </div>
-
-        <!-- Dashboard -->
-        <div id="dashboard-view" class="p-4 space-y-5 hidden max-w-7xl mx-auto">
-            <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
-                <div class="glass-card p-5 rounded-2xl"><p class="text-[10px] text-gray-500 font-bold mb-1 uppercase">মোট জমা</p><p id="total-income" class="text-2xl font-black text-emerald-500">৳ 0</p></div>
-                <div class="glass-card p-5 rounded-2xl"><p class="text-[10px] text-gray-500 font-bold mb-1 uppercase">মোট খরচ</p><p id="total-expense" class="text-2xl font-black text-rose-500">৳ 0</p></div>
-                <div class="glass-card p-5 rounded-2xl col-span-2 md:col-span-1"><p class="text-[10px] text-gray-500 font-bold mb-1 uppercase">ব্যালেন্স</p><p id="total-balance" class="text-2xl font-black text-purple-600">৳ 0</p></div>
-            </div>
-
-            <div class="glass-card p-5 rounded-2xl space-y-4">
-                <h3 class="font-bold text-sm flex items-center gap-2"><i class="fas fa-plus-circle text-emerald-500"></i> নতুন লেনদেন</h3>
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <input id="trans-customer" list="customer-suggestions" placeholder="কাস্টমারের নাম" class="px-4 py-3 bg-gray-100 dark:bg-gray-800 rounded-xl outline-none text-sm">
-                    <datalist id="customer-suggestions"></datalist>
-                    <input id="trans-desc" placeholder="বিবরণ" class="px-4 py-3 bg-gray-100 dark:bg-gray-800 rounded-xl outline-none text-sm">
-                    <input id="trans-amount" type="number" placeholder="পরিমাণ" class="px-4 py-3 bg-gray-100 dark:bg-gray-800 rounded-xl outline-none text-sm">
-                    <div class="flex gap-2 sm:col-span-2">
-                        <select id="trans-type" class="flex-1 px-4 py-3 bg-gray-100 dark:bg-gray-800 rounded-xl outline-none text-sm"><option value="income">আয় (+)</option><option value="expense">খরচ (-)</option></select>
-                        <button onclick="addTransaction()" class="bg-emerald-500 text-white px-8 py-3 rounded-xl shadow-md active:scale-95 transition-all"><i class="fas fa-plus"></i></button>
-                    </div>
-                </div>
-            </div>
-            <h3 class="font-bold text-sm pt-4">কাস্টমার তালিকা</h3>
-            <div id="dashboard-customers-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
-        </div>
-
-        <!-- Transactions List -->
-        <div id="transactions-view" class="p-4 hidden max-w-3xl mx-auto">
-            <div id="transactions-list" class="space-y-3"></div>
-        </div>
-
-        <!-- Customers View -->
-        <div id="customers-view" class="p-4 hidden max-w-7xl mx-auto">
-            <div class="flex justify-between items-center mb-4">
-                <h2 class="font-bold">কাস্টমার তালিকা</h2>
-                <button onclick="showCreateCustomerModal()" class="bg-purple-600 text-white px-4 py-2 rounded-lg text-xs font-bold flex items-center gap-2 shadow-md"><i class="fas fa-user-plus"></i> নতুন কাস্টমার</button>
-            </div>
-            <div id="customers-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
-        </div>
-
-        <!-- User/Customer View -->
-        <div id="customer-view" class="p-4 hidden max-w-3xl mx-auto">
-            <div class="glass-card p-6 rounded-3xl space-y-6">
-                <div class="flex justify-between items-center border-b pb-4 dark:border-gray-800">
-                    <h2 id="customer-name-display" class="font-bold text-xl">লোড হচ্ছে...</h2>
-                    <button onclick="loadCustomerData()" class="text-purple-600"><i class="fas fa-sync-alt"></i></button>
-                </div>
-                <div class="grid grid-cols-3 gap-3 text-center">
-                    <div class="bg-emerald-50 dark:bg-emerald-950/20 p-4 rounded-2xl"><p class="text-[10px] mb-1">জমা</p><p id="cust-income" class="text-emerald-500 font-black text-sm">৳ 0</p></div>
-                    <div class="bg-rose-50 dark:bg-rose-950/20 p-4 rounded-2xl"><p class="text-[10px] mb-1">খরচ</p><p id="cust-expense" class="text-rose-500 font-black text-sm">৳ 0</p></div>
-                    <div class="bg-purple-50 dark:bg-purple-950/20 p-4 rounded-2xl"><p class="text-[10px] mb-1">ব্যালেন্স</p><p id="cust-balance" class="text-purple-600 font-black text-sm">৳ 0</p></div>
-                </div>
-                <div id="customer-transactions" class="space-y-2"></div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Edit Modal -->
-    <div id="edit-modal" class="hidden fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
-        <div class="glass-card p-6 rounded-2xl w-full max-w-md space-y-4">
-            <h3 class="font-bold">লেনদেন সংশোধন</h3>
-            <input id="edit-desc" type="text" placeholder="বিবরণ" class="w-full px-4 py-3 bg-gray-100 dark:bg-gray-800 rounded-xl outline-none">
-            <input id="edit-amount" type="number" placeholder="পরিমাণ" class="w-full px-4 py-3 bg-gray-100 dark:bg-gray-800 rounded-xl outline-none">
+            <button onclick="navigatedark:bg-gray-800 rounded-xl outline-none">
             <select id="edit-type" class="w-full px-4 py-3 bg-gray-100 dark:bg-gray-800 rounded-xl outline-none">
                 <option value="income">আয় (+)</option>
                 <option value="expense">খরচ (-)</option>
@@ -177,23 +111,7 @@
 
     <!-- Profile Menu -->
     <div id="profile-menu" class="hidden fixed top-14 right-4 bg-white dark:bg-gray-900 shadow-2xl rounded-2xl py-3 w-64 z-50 border dark:border-gray-800">
-        <div class="px-5 py-2 border-b dark:border-gray-800 mb-2">
-            <p id="profile-name" class="font-bold text-sm"></p>
-            <p id="profile-email" class="text-[10px] text-gray-500"></p>
-        </div>
-        <button onclick="logout()" class="w-full text-left px-5 py-3 text-red-500 text-sm font-bold flex items-center gap-2 hover:bg-red-50">
-            <i class="fas fa-sign-out-alt"></i> লগআউট করুন
-        </button>
-        <div id="admin-secret-section" class="hidden border-t mt-2 pt-4 px-4">
-            <input id="master-unlock-code" type="password" placeholder="মাস্টার কোড" class="w-full px-3 py-2 bg-gray-100 dark:bg-gray-800 rounded-lg text-xs mb-2">
-            <button onclick="unlockAdSettings()" class="w-full bg-blue-600 text-white py-2 rounded-lg text-xs font-bold">অ্যাড সেটিংস</button>
-            <div id="ad-settings-unlocked" class="hidden mt-2 space-y-2">
-                <input id="ad-link-input" type="text" placeholder="অ্যাড লিংক" class="w-full px-3 py-2 bg-gray-100 dark:bg-gray-800 rounded-lg text-xs">
-                <button onclick="saveAdLink()" class="w-full bg-emerald-600 text-white py-2 rounded-lg text-xs font-bold">সেভ</button>
-            </div>
-        </div>
-    </div>
-
+        <div 
     <script src="script.js"></script>
 </body>
 </html>
