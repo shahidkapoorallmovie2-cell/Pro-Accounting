@@ -1,14 +1,6 @@
 // Firebase Configuration
 const firebaseConfig = {
-    apiKey: "AIzaSyDTnuxZ5vINwvvALc888hWvn6hGF39XV84",
-    authDomain: "pro-accounting-2a806.firebaseapp.com",
-    databaseURL: "https://pro-accounting-2a806-default-rtdb.firebaseio.com",
-    projectId: "pro-accounting-2a806",
-    storageBucket: "pro-accounting-2a806.firebasestorage.app",
-    messagingSenderId: "1026296934241",
-    appId: "1:1026296934241:web:e170860e2287e02fe35f20",
-    measurementId: "G-4DS451640P"
-};
+    apiKey: 
 
 // Initialize Firebase
 firebase.initializeApp(firebaseConfig);
