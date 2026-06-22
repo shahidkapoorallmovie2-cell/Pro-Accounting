@@ -59,51 +59,7 @@ function formatBDT(amount) {
 function navigateTo(view) {
     ['dashboard', 'transactions', 'customers', 'customer'].forEach(id => {
         const viewEl = document.getElementById(id + '-view');
-        const navEl = document.getElementById('nav-' + id);
-        if(viewEl) viewEl.classList.add('hidden');
-        if(navEl) navEl.classList.remove('nav-active');
-    });
-    
-    document.getElementById(view + '-view').classList.remove('hidden');
-    const activeNav = document.getElementById('nav-' + view);
-    if(activeNav) activeNav.classList.add('nav-active');
-}
-
-function toggleDarkMode() {
-    document.documentElement.classList.toggle('dark');
-}
-
-function toggleProfileMenu() {
-    document.getElementById('profile-menu').classList.toggle('hidden');
-}
-
-async function logout() {
-    await auth.signOut();
-    sessionStorage.clear();
-    location.reload();
-}
-
-function switchAuthTab(tab) {
-    const loginForm = document.getElementById('login-form');
-    const signupForm = document.getElementById('signup-form');
-    const loginTab = document.getElementById('login-tab');
-    const signupTab = document.getElementById('signup-tab');
-    
-    loginForm.classList.toggle('hidden', tab !== 0);
-    signupForm.classList.toggle('hidden', tab === 0);
-    loginTab.classList.toggle('nav-active', tab === 0);
-    signupTab.classList.toggle('nav-active', tab !== 0);
-}
-
-// App Unlock Logic
-function startAppUnlock() {
-    window.open(globalAdLink, '_blank');
-    const progContainer = document.getElementById('appProgressContainer');
-    const progressBar = document.getElementById('appProgressBar');
-    const unlockBtn = document.getElementById('appUnlockBtn');
-    
-    unlockBtn.disabled = true;
-    progContainer.classList.remove('hidden');
+        const navEl = document.getElementr.classList.remove('hidden');
     
     let width = 0;
     const timer = setInterval(() => {
@@ -305,102 +261,7 @@ async function deleteTrans(id) {
     }
 }
 
-async function loadCustomersList() {
-    const snapshot = await db.collection('users')
-        .where('role', '==', 'user')
-        .where('createdBy', '==', currentUser.uid)
-        .get();
-    
-    const customers = snapshot.docs.map(doc => doc.data());
-    
-    document.getElementById('customers-grid').innerHTML = customers.map(c => `
-        <div class="glass-card p-4 rounded-2xl cursor-pointer" onclick="viewCustomerHistory('${c.displayName}')">
-            <p class="font-bold text-sm">${c.displayName}</p>
-            <p class="text-[10px] text-gray-500">${c.email}</p>
-        </div>
-    `).join('');
-    
-    document.getElementById('customer-suggestions').innerHTML = customers.map(c => 
-        `<option value="${c.displayName}">`
-    ).join('');
-}
-
-function renderDashboardCustomers() {
-    const summary = {};
-    allTransactions.forEach(t => {
-        if(!summary[t.customerName]) summary[t.customerName] = { inc: 0, exp: 0 };
-        if(t.type === 'income') summary[t.customerName].inc += t.amount;
-        else summary[t.customerName].exp += t.amount;
-    });
-    
-    document.getElementById('dashboard-customers-grid').innerHTML = Object.keys(summary).map(name => `
-        <div class="glass-card p-4 rounded-2xl" onclick="viewCustomerHistory('${name}')">
-            <p class="font-bold text-sm text-purple-600">${name}</p>
-            <p class="text-xs font-black">ব্যালেন্স: ${formatBDT(summary[name].inc - summary[name].exp)}</p>
-        </div>
-    `).join('');
-}
-
-// Customer Functions
-async function loadCustomerData() {
-    const userDoc = await db.collection('users').doc(currentUser.uid).get();
-    const userData = userDoc.data();
-    document.getElementById('customer-name-display').textContent = userData.displayName;
-    
-    const shops = await db.collection('shopkeepers').get();
-    let myTransactions = [];
-    
-    for (const shop of shops.docs) {
-        const querySnapshot = await db.collection('shopkeepers').doc(shop.id)
-            .collection('transactions')
-            .where('customerName', '==', userData.displayName)
-            .get();
-        querySnapshot.forEach(doc => myTransactions.push(doc.data()));
-    }
-    
-    let income = 0, expense = 0;
-    myTransactions.forEach(t => {
-        if(t.type === 'income') income += t.amount;
-        else expense += t.amount;
-    });
-    
-    document.getElementById('cust-income').textContent = formatBDT(income);
-    document.getElementById('cust-expense').textContent = formatBDT(expense);
-    document.getElementById('cust-balance').textContent = formatBDT(income - expense);
-    
-    document.getElementById('customer-transactions').innerHTML = myTransactions
-        .sort((a, b) => b.date - a.date)
-        .map(t => `
-            <div class="glass-card p-4 rounded-2xl flex justify-between">
-                <div>
-                    <p class="font-bold text-xs">${t.description}</p>
-                    <p class="text-[8px] text-gray-400">${t.banglaDate || ''}</p>
-                </div>
-                <div class="${t.type === 'income' ? 'text-emerald-500' : 'text-rose-500'} font-bold text-xs">
-                    ${formatBDT(t.amount)}
-                </div>
-            </div>
-        `).join('');
-}
-
-// Modal Functions
-window.viewCustomerHistory = (name) => {
-    const filtered = allTransactions.filter(t => t.customerName === name);
-    document.getElementById('history-modal-title').textContent = name;
-    document.getElementById('history-modal-list').innerHTML = filtered.map(t => `
-        <div class="p-3 border-b text-xs flex justify-between items-center">
-            <div>
-                <span class="block font-medium">${t.description}</span>
-                <span class="text-[8px] text-gray-400">${t.banglaDate || ''}</span>
-            </div>
-            <div class="flex items-center gap-3">
-                <span class="${t.type === 'income' ? 'text-emerald-500' : 'text-rose-500'} font-bold">
-                    ${formatBDT(t.amount)}
-                </span>
-                <div class="flex gap-1">
-                    <button onclick="openEdit('${t.id}')" class="text-blue-500"><i class="fas fa-edit"></i></button>
-                    <button onclick="deleteTrans('${t.id}')" class="text-red-500"><i class="fas fa-trash"></i></button>
-                </div>
+async function loadCustomersList()                </div>
             </div>
         </div>
     `).join('');
@@ -434,40 +295,4 @@ async function createCustomerAccount() {
             role: 'user',
             createdBy: currentUser.uid
         });
-        await secondaryAuth.signOut();
-        showToast("কাস্টমার অ্যাকাউন্ট তৈরি হয়েছে");
-        closeCreateCustomerModal();
-        loadCustomersList();
-    } catch(err) {
-        showToast(err.message, "error");
-    }
-    showLoader(false);
-}
-
-// Admin Settings Functions
-function unlockAdSettings() {
-    const code = document.getElementById('master-unlock-code').value;
-    if(code === "BADhon223466") {
-        document.getElementById('ad-settings-unlocked').classList.remove('hidden');
-    } else {
-        showToast("ভুল কোড!", "error");
-    }
-}
-
-async function saveAdLink() {
-    const link = document.getElementById('ad-link-input').value;
-    await db.collection('settings').doc('appConfig').set({ adLink: link }, { merge: true });
-    showToast("অ্যাড লিংক সেভ হয়েছে");
-}
-
-// Auth State Listener
-auth.onAuthStateChanged(user => {
-    if(user) {
-        currentUser = user;
-        loadUserData();
-    } else {
-        document.getElementById('auth-screen').classList.remove('hidden');
-        document.getElementById('main-app').classList.add('hidden');
-        document.getElementById('app-locker').classList.add('hidden');
-    }
-});
+        
