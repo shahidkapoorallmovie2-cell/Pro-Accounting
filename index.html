@@ -1,8 +1,358 @@
 <!DOCTYPE html>
 <html lang="bn">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <meta name="theme-color" content="#7C3AED">
-    <title>প্রো অ্যাকাউন্টিং | স্মার্ট ড্যাশবোর্ড</title>
-    <link href=
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes" />
+  <title>Link Master Pro · Shrt & Ad-Lock</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+  <style>
+    * { transition: background-color 0.2s ease, color 0.15s, border-color 0.2s; }
+    body { font-family: 'Inter', system-ui, -apple-system, sans-serif; }
+    .glass {
+      background: rgba(255,255,255,0.08);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+    .gradient-bg { background: linear-gradient(145deg, #0F172A 0%, #1E1B4B 50%, #2E1065 100%); }
+    .btn-primary { background: #7C3AED; color: white; }
+    .btn-locked { background: #ff0050; color: white; }
+    .toast {
+      position: fixed; bottom: 2rem; left: 50%; transform: translateX(-50%);
+      background: #1E293B; color: #F8FAFC; padding: 0.75rem 2rem;
+      border-radius: 9999px; box-shadow: 0 12px 30px rgba(0,0,0,0.5);
+      z-index: 1000; opacity: 0; transition: opacity 0.3s, transform 0.2s;
+      pointer-events: none; border: 1px solid rgba(255,255,255,0.1);
+    }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); pointer-events: auto; }
+    input, select { background: rgba(255,255,255,0.05); border: 1px solid #334155; border-radius: 2rem; padding: 0.75rem 1.25rem; color: inherit; width: 100%; }
+    input:focus { outline: none; border-color: #7C3AED; box-shadow: 0 0 0 3px rgba(124,58,237,0.3); }
+    .animate-fade { animation: fadeIn 0.3s ease; }
+    @keyframes fadeIn { from { opacity:0; transform: translateY(8px); } to { opacity:1; transform: translateY(0); } }
+    .chip { background: rgba(124,58,237,0.15); padding: 0.2rem 0.8rem; border-radius: 40px; font-size: 0.7rem; }
+    
+    /* ল্যান্ডিং পেজ স্টাইল */
+    #landingOverlay {
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        background: #0f0f1a; z-index: 9999; display: none; overflow-y: auto;
+    }
+    .progress-bar { height: 100%; background: #00f2ea; width: 0%; transition: width 0.1s linear; }
+  </style>
+</head>
+<body class="gradient-bg text-slate-200 min-h-screen antialiased">
+
+  <!-- ল্যান্ডিং পেজ (অ্যাড-লক) -->
+  <div id="landingOverlay">
+    <div class="flex flex-col items-center justify-center min-h-screen p-4">
+        <div class="glass p-6 rounded-2xl max-w-sm w-full mb-6 border-l-4 border-yellow-500">
+            <h3 class="text-yellow-500 font-bold mb-2"><i class="fas fa-exclamation-triangle mr-2"></i>ডাউনলোড করার নিয়ম</h3>
+            <ul class="text-sm text-slate-300 space-y-1">
+                <li>১. 'Unlock' বাটনে ক্লিক করে অ্যাড দেখুন।</li>
+                <li>২. ৫ সেকেন্ড অপেক্ষা করুন।</li>
+                <li>৩. এরপর ডাউনলোড বাটনটি আসবে।</li>
+            </ul>
+        </div>
+        <div class="glass p-8 rounded-[2rem] max-w-sm w-full text-center">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/d/d0/Capcut_logo.jpg" class="w-20 h-20 rounded-2xl mx-auto mb-4 shadow-2xl">
+            <h2 id="landTitle" class="text-2xl font-bold mb-4">File Unlocking...</h2>
+            
+            <button id="unlockBtn" onclick="startUnlock()" class="w-full py-4 rounded-xl bg-pink-600 hover:bg-pink-700 font-bold flex items-center justify-center gap-2">
+                <i class="fas fa-lock-open"></i> Watch Ad to Unlock
+            </button>
+
+            <div id="timerBox" class="hidden mt-4">
+                <div class="w-full h-2 bg-white/10 rounded-full overflow-hidden">
+                    <div id="pBar" class="progress-bar"></div>
+                </div>
+                <p class="text-xs mt-2 text-cyan-400">Verifying Advertisement...</p>
+            </div>
+
+            <a id="finalLink" href="#" class="hidden w-full py-4 rounded-xl bg-emerald-600 font-bold flex items-center justify-center gap-2">
+                <i class="fas fa-download"></i> Continue to Link
+            </a>
+        </div>
+        <button onclick="location.reload()" class="mt-6 text-slate-500 text-sm">Cancel</button>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div id="toast" class="toast"></div>
+
+  <div class="container max-w-5xl mx-auto px-4 py-6 md:py-10" id="mainDashboard">
+    <!-- Header -->
+    <header class="text-center mb-10 animate-fade">
+      <div class="inline-block glass px-6 py-2 rounded-full text-sm mb-3 text-purple-300">
+        <i class="fas fa-bolt mr-2"></i> ১০০% ওয়ার্কিং · রিডাইরেক্ট + অ্যাড-লক সিস্টেম
+      </div>
+      <h1 class="text-4xl md:text-6xl font-extrabold bg-gradient-to-r from-violet-400 to-fuchsia-400 bg-clip-text text-transparent leading-tight">
+        লিংক মাস্টার প্রিমিয়াম
+      </h1>
+      <p class="text-lg md:text-xl text-slate-300 mt-4 max-w-2xl mx-auto">
+        লিংক শর্ট করুন এবং অ্যাড-লকিং এর মাধ্যমে ইনকাম বা প্রোটেকশন নিশ্চিত করুন।
+      </p>
+    </header>
+
+    <!-- Shortener Input -->
+    <section class="glass card p-6 md:p-8 mb-10 animate-fade rounded-[2rem]">
+      <div class="flex flex-col md:flex-row gap-4">
+        <div class="flex-1">
+          <input type="url" id="urlInput" placeholder="https://google.com/your-long-link" class="w-full">
+        </div>
+        <div class="flex flex-wrap gap-2">
+          <input type="text" id="customAlias" placeholder="নাম (ঐচ্ছিক)" class="w-32 md:w-40">
+          <button onclick="handleShorten('direct')" class="btn-primary px-6 py-3 rounded-full font-semibold flex items-center gap-2">
+            <i class="fas fa-link"></i> ডিরেক্ট
+          </button>
+          <button onclick="handleShorten('locked')" class="btn-locked px-6 py-3 rounded-full font-semibold flex items-center gap-2">
+            <i class="fas fa-lock"></i> অ্যাড-লক
+          </button>
+        </div>
+      </div>
+      <div class="flex flex-wrap gap-3 mt-4 text-sm items-center">
+        <span class="chip"><i class="fas fa-bolt text-yellow-400 mr-1"></i> ডিরেক্ট: সরাসরি রিডাইরেক্ট হবে</span>
+        <span class="chip"><i class="fas fa-shield-alt text-pink-400 mr-1"></i> অ্যাড-লক: ল্যান্ডিং পেজ দেখাবে</span>
+      </div>
+
+      <!-- Result Box -->
+      <div id="shortResult" class="mt-5 hidden glass p-4 rounded-2xl border border-purple-500/30">
+        <div class="flex items-center justify-between flex-wrap gap-3">
+          <div class="flex items-center gap-3">
+            <i class="fas fa-check-circle text-green-400 text-xl"></i>
+            <span id="shortenedUrl" class="text-purple-300 font-mono break-all font-bold"></span>
+          </div>
+          <div class="flex gap-2">
+            <button id="copyBtn" class="bg-white/10 px-4 py-1.5 rounded-full text-sm hover:bg-white/20"><i class="far fa-copy"></i> কপি</button>
+            <button id="qrBtn" class="bg-white/10 px-4 py-1.5 rounded-full text-sm hover:bg-white/20"><i class="fas fa-qrcode"></i> QR</button>
+          </div>
+        </div>
+      </div>
+      <div id="qrPreview" class="mt-3 hidden glass p-3 rounded-2xl inline-block"></div>
+    </section>
+
+    <!-- Stats -->
+    <section class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8 animate-fade">
+      <div class="glass p-4 rounded-2xl text-center"><span class="text-2xl font-bold text-purple-300" id="totalLinks">0</span><p class="text-xs opacity-70">মোট লিংক</p></div>
+      <div class="glass p-4 rounded-2xl text-center"><span class="text-2xl font-bold text-emerald-300" id="totalClicks">0</span><p class="text-xs opacity-70">মোট ক্লিক</p></div>
+      <div class="glass p-4 rounded-2xl text-center"><span class="text-2xl font-bold text-pink-300" id="popularLink">-</span><p class="text-xs opacity-70">সেরা লিংক</p></div>
+      <div class="glass p-4 rounded-2xl text-center"><span class="text-2xl font-bold text-cyan-300" id="recentLink">-</span><p class="text-xs opacity-70">সাম্প্রতিক</p></div>
+    </section>
+
+    <!-- Charts -->
+    <div class="grid md:grid-cols-3 gap-4 mb-8 animate-fade">
+      <div class="glass p-4 rounded-2xl h-48"><canvas id="barChart"></canvas></div>
+      <div class="glass p-4 rounded-2xl h-48"><canvas id="pieChart"></canvas></div>
+      <div class="glass p-4 rounded-2xl h-48"><canvas id="lineChart"></canvas></div>
+    </div>
+
+    <!-- Links List -->
+    <div class="glass p-5 rounded-3xl mb-8 animate-fade">
+      <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
+        <h2 class="text-xl font-bold flex items-center gap-2"><i class="fas fa-list-ul text-primary"></i> আমার লিংকসমূহ</h2>
+        <div class="flex gap-2">
+            <button onclick="exportData('csv')" class="bg-emerald-600/30 px-3 py-1.5 rounded-full text-xs">CSV</button>
+            <button onclick="exportData('json')" class="bg-sky-600/30 px-3 py-1.5 rounded-full text-xs">JSON</button>
+        </div>
+      </div>
+      <div id="linksContainer" class="space-y-3 max-h-96 overflow-y-auto pr-1"></div>
+    </div>
+    
+    <p class="text-center text-xs opacity-40">Link Master Pro &copy; 2024 · All Rights Reserved</p>
+  </div>
+
+  <script>
+    "use strict";
+    
+    // কনফিগারেশন
+    const AD_DIRECT_LINK = "https://www.facebook.com"; // আপনার Adsterra বা অ্যাড লিঙ্ক এখানে দিন
+    
+    let links = JSON.parse(localStorage.getItem('shortLinks')) || [];
+    let currentTarget = "";
+
+    const $ = id => document.getElementById(id);
+    const toast = $('toast');
+
+    function showToast(msg, type='info'){
+        toast.textContent = msg;
+        toast.className = 'toast show';
+        toast.style.background = type === 'success' ? '#065F46' : (type === 'error' ? '#7F1D1D' : '#1E293B');
+        setTimeout(() => toast.classList.remove('show'), 3000);
+    }
+
+    // ---------- রিডাইরেক্ট লজিক (সবার আগে চলবে) ----------
+    function checkRedirect() {
+        const params = new URLSearchParams(window.location.search);
+        const code = params.get('r');
+        if (code) {
+            const found = links.find(l => l.shortCode === code);
+            if (found) {
+                found.clicks = (found.clicks || 0) + 1;
+                saveLinks();
+                
+                if (found.type === 'locked') {
+                    $('mainDashboard').style.display = 'none';
+                    $('landingOverlay').style.display = 'block';
+                    currentTarget = found.originalUrl;
+                } else {
+                    window.location.replace(found.originalUrl);
+                }
+            } else {
+                showToast('লিঙ্ক খুঁজে পাওয়া যায়নি!', 'error');
+            }
+        }
+    }
+
+    // ---------- অ্যাড-লক প্রসেস ----------
+    function startUnlock() {
+        window.open(AD_DIRECT_LINK, '_blank');
+        $('unlockBtn').style.display = 'none';
+        $('timerBox').style.display = 'block';
+        
+        let w = 0;
+        const intr = setInterval(() => {
+            w++;
+            $('pBar').style.width = w + '%';
+            if (w >= 100) {
+                clearInterval(intr);
+                $('timerBox').style.display = 'none';
+                $('finalLink').style.display = 'flex';
+                $('finalLink').href = currentTarget;
+                $('landTitle').textContent = "Link Unlocked!";
+            }
+        }, 50); // ৫ সেকেন্ড
+    }
+
+    // ---------- লিঙ্ক তৈরি ----------
+    function handleShorten(type) {
+        const url = $('urlInput').value.trim();
+        const alias = $('customAlias').value.trim();
+        
+        if (!url || !url.startsWith('http')) return showToast('সঠিক URL দিন!', 'error');
+
+        const code = alias || Math.random().toString(36).substring(2, 8);
+        if (links.find(l => l.shortCode === code)) return showToast('এই নাম ইতিমধ্যে আছে!', 'error');
+
+        const shortUrl = window.location.origin + window.location.pathname + "?r=" + code;
+        
+        const newLink = {
+            id: Date.now(),
+            originalUrl: url,
+            shortCode: code,
+            shortUrl: shortUrl,
+            type: type,
+            clicks: 0,
+            createdAt: new Date().toISOString()
+        };
+
+        links.unshift(newLink);
+        saveLinks();
+        renderLinks();
+        
+        $('shortResult').classList.remove('hidden');
+        $('shortenedUrl').textContent = shortUrl;
+        showToast('লিঙ্ক তৈরি হয়েছে!', 'success');
+    }
+
+    function renderLinks() {
+        const container = $('linksContainer');
+        if (links.length === 0) {
+            container.innerHTML = `<p class="text-center py-4 opacity-40">কোনো লিঙ্ক নেই</p>`;
+            return;
+        }
+
+        container.innerHTML = links.map(l => `
+            <div class="glass p-4 rounded-2xl flex flex-wrap items-center justify-between gap-3 animate-fade">
+                <div class="flex-1 min-w-[200px]">
+                    <div class="flex items-center gap-2 mb-1">
+                        <span class="text-[10px] font-bold uppercase px-2 py-0.5 rounded ${l.type === 'locked' ? 'bg-pink-500/20 text-pink-400' : 'bg-emerald-500/20 text-emerald-400'}">${l.type}</span>
+                        <span class="text-xs opacity-50">${l.shortCode}</span>
+                    </div>
+                    <div class="text-sm truncate w-64 opacity-70">${l.originalUrl}</div>
+                    <div class="text-purple-400 font-mono text-xs mt-1">${l.shortUrl}</div>
+                </div>
+                <div class="flex items-center gap-3">
+                    <div class="text-center px-3">
+                        <div class="text-lg font-bold">${l.clicks}</div>
+                        <div class="text-[10px] opacity-50">CLICKS</div>
+                    </div>
+                    <button onclick="copyToClipboard('${l.shortUrl}')" class="p-2 bg-white/5 rounded-full hover:bg-white/10"><i class="far fa-copy"></i></button>
+                    <button onclick="deleteLink(${l.id})" class="p-2 bg-red-500/10 text-red-400 rounded-full hover:bg-red-500/20"><i class="fas fa-trash"></i></button>
+                </div>
+            </div>
+        `).join('');
+        
+        updateStats();
+        updateCharts();
+    }
+
+    function saveLinks() { localStorage.setItem('shortLinks', JSON.stringify(links)); }
+
+    function deleteLink(id) {
+        if (confirm('লিঙ্কটি মুছে ফেলবেন?')) {
+            links = links.filter(l => l.id !== id);
+            saveLinks();
+            renderLinks();
+        }
+    }
+
+    function copyToClipboard(txt) {
+        navigator.clipboard.writeText(txt);
+        showToast('কপি করা হয়েছে!', 'success');
+    }
+
+    function updateStats() {
+        $('totalLinks').textContent = links.length;
+        $('totalClicks').textContent = links.reduce((a, b) => a + b.clicks, 0);
+        if (links.length > 0) {
+            const top = [...links].sort((a,b) => b.clicks - a.clicks)[0];
+            $('popularLink').textContent = top.shortCode;
+            $('recentLink').textContent = links[0].shortCode;
+        }
+    }
+
+    // ---------- চার্টস ----------
+    let charts = {};
+    function updateCharts() {
+        const labels = links.slice(0, 5).map(l => l.shortCode);
+        const data = links.slice(0, 5).map(l => l.clicks);
+        
+        if (charts.bar) charts.bar.destroy();
+        if (charts.pie) charts.pie.destroy();
+        
+        const config = (type) => ({
+            type: type,
+            data: { labels, datasets: [{ data, backgroundColor: ['#7C3AED', '#EC4899', '#10B981', '#F59E0B', '#3B82F6'] }] },
+            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+        });
+
+        charts.bar = new Chart($('barChart'), config('bar'));
+        charts.pie = new Chart($('pieChart'), config('pie'));
+        charts.line = new Chart($('lineChart'), config('line'));
+    }
+
+    // QR Code
+    $('qrBtn').onclick = () => {
+        const url = $('shortenedUrl').textContent;
+        $('qrPreview').innerHTML = "";
+        $('qrPreview').classList.remove('hidden');
+        new QRCode($('qrPreview'), { text: url, width: 100, height: 100 });
+    };
+
+    // Export
+    window.exportData = (format) => {
+        let content = format === 'csv' ? "ShortCode,OriginalURL,Clicks\n" + links.map(l => `${l.shortCode},${l.originalUrl},${l.clicks}`).join("\n") : JSON.stringify(links);
+        const blob = new Blob([content], { type: 'text/plain' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = `links-backup.${format}`;
+        a.click();
+    };
+
+    // Initialize
+    checkRedirect();
+    renderLinks();
+  </script>
+</body>
+                    </html>
